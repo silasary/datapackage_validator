@@ -8,7 +8,6 @@ import worlds
 
 
 print("\n")
-
 parser = argparse.ArgumentParser(
     description="Validate data package against known good file"
 )
@@ -16,12 +15,15 @@ parser.add_argument(
     "input_file_path",
     help="Path to the input file",
     default=os.getenv("DATAPACKAGE_EXPORT_PATH"),
+    nargs="?",
 )
 parser.add_argument(
     "game_name",
     help="Name of the game",
     default=os.getenv("DATAPACKAGE_EXPORT_GAME_NAME"),
+    nargs="?",
 )
+
 parser.add_argument(
     "--update-datapackage",
     action="store_true",
@@ -35,8 +37,14 @@ input_file_path = args.input_file_path
 game_name = args.game_name
 update_datapackage = args.update_datapackage
 
-if not os.path.exists(input_file_path):
+if input_file_path is None:
+    parser.error("Input file path not provided. Provide as argument or set DATAPACKAGE_EXPORT_PATH environment variable")
+elif not os.path.exists(input_file_path):
     parser.error("Path not valid")
+
+if game_name is None:
+    parser.error("Game name not provided. Provide as argument or set DATAPACKAGE_EXPORT_GAME_NAME environment variable")
+
 with open(input_file_path) as f:
     datapackage_export: worlds.DataPackage = json.load(f)
 
