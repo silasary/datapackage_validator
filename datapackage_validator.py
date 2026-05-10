@@ -70,9 +70,9 @@ def validate_items(
 
     for item, id in known_good_items.items():
         if item not in validation_items.keys():
-            discrepancies.append(f"Item Missing from new data: {item}")
+            discrepancies.append(f"[Item] {item}: Item Missing from new data")
         elif not validation_items[item] == id:
-            discrepancies.append(f"{item}: id has changed: {id} -> {validation_items[item]}")
+            discrepancies.append(f"[Item] {item}: id has changed: {id} -> {validation_items[item]}")
 
 
 def validate_locations(
@@ -84,9 +84,9 @@ def validate_locations(
     validation_locations = active_datapackage["location_name_to_id"]
     for location, id in known_good_locations.items():
         if location not in validation_locations.keys():
-            discrepancies.append(f"{location}: Location Missing from new data:")
+            discrepancies.append(f"[Location] {location}: Location Missing from new data:")
         elif not validation_locations[location] == id:
-            discrepancies.append(f"{location}: id has changed: {id} -> {validation_locations[location]}")
+            discrepancies.append(f"[Location] {location}: id has changed: {id} -> {validation_locations[location]}")
 
 
 
