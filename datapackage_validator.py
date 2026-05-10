@@ -5,6 +5,7 @@ import json
 import argparse
 
 import worlds
+from NetUtils import GamesPackage
 
 
 print("\n")
@@ -56,10 +57,14 @@ if game_name not in worlds.network_data_package["games"].keys():
 known_datapackage = datapackage_export["games"][game_name]
 active_datapackage = worlds.network_data_package["games"][game_name]
 
-discrepancies: dict[str, dict[str, dict]] = {}
+discrepancies: list[str] = []
 
 
-def validate_items(known_datapackage, active_datapackage, discrepancies):
+def validate_items(    
+    known_datapackage: GamesPackage,
+    active_datapackage: GamesPackage,
+    discrepancies: list[str],
+) -> None:
     known_good_items = known_datapackage["item_name_to_id"]
     validation_items = active_datapackage["item_name_to_id"]
     # excluded_item_ids = []
@@ -67,15 +72,15 @@ def validate_items(known_datapackage, active_datapackage, discrepancies):
 
     for item, id in known_good_items.items():
         if item not in validation_items.keys():
-            discrepancies[item] = {
-                item: {"type": "item", "known": item, "validation": None}
-            }
+            discrepancies.append(f"Item Missing from new data: {item}")#{
+            #     item: {"type": "item", "known": item, "validation": None}
+            # }
         # excluded_item_ids.append(id)
         elif not validation_items[item] == id:
             # checked_validation_items.pop(item)
-            discrepancies[item] = {
-                item: {"type": "id", "known": id, "validation": validation_items[item]}
-            }
+            discrepancies.append(f"Item id mismatch: {id} -> {validation_items[item]}")#{
+            #     item: {"type": "id", "known": id, "validation": validation_items[item]}
+            # }
             print(f"{item}: expected id: {id}, found id: {validation_items[item]}")
 
     # for id in excluded_item_ids:
@@ -93,27 +98,27 @@ def validate_items(known_datapackage, active_datapackage, discrepancies):
 
 
 def validate_locations(
-    known_datapackage: worlds.DataPackage,
-    active_datapackage: worlds.DataPackage,
-    discrepancies: dict[str, dict[str, dict]],
-):
+    known_datapackage: GamesPackage,
+    active_datapackage: GamesPackage,
+    discrepancies: list[str],
+) -> None:
     known_good_locations = known_datapackage["location_name_to_id"]
     validation_locations = active_datapackage["location_name_to_id"]
     for location, id in known_good_locations.items():
         if location not in validation_locations.keys():
-            discrepancies[location] = {
-                location: {"type": "location", "known": location, "validation": None}
-            }
+            discrepancies.append(f"Location Missing from new data: {location}")#{
+                #location: {"type": "location", "known": location, "validation": None}
+            #}
         # excluded_location_ids.append(id)
         elif not validation_locations[location] == id:
-            # checked_validation_locations.pop(location)
-            discrepancies[location] = {
-                location: {
-                    "type": "id",
-                    "known": id,
-                    "validation": validation_locations[location],
-                }
-            }
+            #checked_validation_locations.pop(location)
+            discrepancies.append(f"Location id mismatch: {id} -> {validation_locations[location]}")#{
+            #     location: {
+            #         "type": "id",
+            #         "known": id,
+            #         "validation": validation_locations[location],
+            #     }
+            # }
             print(
                 f"{location}: expected id: {id}, found id: {validation_locations[location]}"
             )
@@ -139,4 +144,6 @@ if len(discrepancies) == 0:
     sys.exit(0)
 else:
     print(f"Validation failed, {len(discrepancies)} discrepancies found")
+    for dis in discrepancies:
+        print(dis)
     sys.exit(1)
