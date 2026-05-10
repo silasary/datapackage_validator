@@ -6,15 +6,18 @@ import argparse
 
 import worlds
 
+
 print("\n")
 
 parser = argparse.ArgumentParser(description="Validate data package against known good file")
 parser.add_argument("input_file_path", help="Path to the input file")
 parser.add_argument("game_name", help="Name of the game")
+parser.add_argument("--update-datapackage", action="store_true", help="Update the datapackage export if validation is successful")
 args = parser.parse_args()
 
 input_file_path = args.input_file_path
 game_name = args.game_name
+update_datapackage = args.update_datapackage
 
 if not os.path.exists(input_file_path):
     parser.error("Path not valid")
@@ -79,6 +82,14 @@ def validate_locations(known_datapackage: worlds.DataPackage, active_datapackage
 
 validate_items(known_datapackage, active_datapackage, discrepancies)
 validate_locations(known_datapackage, active_datapackage, discrepancies)
+
+if len(discrepancies) == 0:
+    print("Validation successful, no discrepancies found")
+    if update_datapackage and active_datapackage["checksum"] != known_datapackage["checksum"]:
+        print("Updating datapackage export with current datapackage")
+        datapackage_export["games"][game_name] = active_datapackage
+        with open(input_file_path, "w") as f:
+            json.dump(datapackage_export, f, indent=4)
     sys.exit(0)
 else:
     print(f"Validation failed, {len(discrepancies)} discrepancies found")
