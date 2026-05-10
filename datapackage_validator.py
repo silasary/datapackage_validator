@@ -10,9 +10,9 @@ import worlds
 print("\n")
 
 parser = argparse.ArgumentParser(description="Validate data package against known good file")
-parser.add_argument("input_file_path", help="Path to the input file")
-parser.add_argument("game_name", help="Name of the game")
-parser.add_argument("--update-datapackage", action="store_true", help="Update the datapackage export if validation is successful")
+parser.add_argument("input_file_path", help="Path to the input file", default=os.getenv("DATAPACKAGE_EXPORT_PATH"))
+parser.add_argument("game_name", help="Name of the game", default=os.getenv("DATAPACKAGE_EXPORT_GAME_NAME"))
+parser.add_argument("--update-datapackage", action="store_true", help="Update the datapackage export if validation is successful", default=os.getenv("DATAPACKAGE_EXPORT_UPDATE", "false").lower() in ("true", "1", "t"))
 args = parser.parse_args()
 
 input_file_path = args.input_file_path
