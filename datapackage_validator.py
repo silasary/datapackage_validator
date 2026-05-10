@@ -60,41 +60,19 @@ active_datapackage = worlds.network_data_package["games"][game_name]
 discrepancies: list[str] = []
 
 
-def validate_items(    
+def validate_items(
     known_datapackage: GamesPackage,
     active_datapackage: GamesPackage,
     discrepancies: list[str],
 ) -> None:
     known_good_items = known_datapackage["item_name_to_id"]
     validation_items = active_datapackage["item_name_to_id"]
-    # excluded_item_ids = []
-    # checked_validation_items = validation_items.keys #list of validation keys, items removed when checking values against known good item list and remaining items are not found in known good items kno
 
     for item, id in known_good_items.items():
         if item not in validation_items.keys():
-            discrepancies.append(f"Item Missing from new data: {item}")#{
-            #     item: {"type": "item", "known": item, "validation": None}
-            # }
-        # excluded_item_ids.append(id)
+            discrepancies.append(f"Item Missing from new data: {item}")
         elif not validation_items[item] == id:
-            # checked_validation_items.pop(item)
-            discrepancies.append(f"Item id mismatch: {id} -> {validation_items[item]}")#{
-            #     item: {"type": "id", "known": id, "validation": validation_items[item]}
-            # }
-            print(f"{item}: expected id: {id}, found id: {validation_items[item]}")
-
-    # for id in excluded_item_ids:
-    #     if id in validation_items.values():
-    #         discrepancies[id] = {id  : {"type" : "id reuse", "known" : id in known_good_items}}
-
-    # for item, val in discrepancies.items():
-
-    #     if val["type"] == "id":
-    #         print(f"{item}: {"known"} -> {"validation"}")
-
-    # if not len(checked_validation_items) == 0:
-    #     for item in checked_validation_items:
-    #         discrepancies[item] = {item : {"type" : "item", "known" : None, "validation" : item}}
+            discrepancies.append(f"{item}: id has changed: {id} -> {validation_items[item]}")
 
 
 def validate_locations(
@@ -106,26 +84,10 @@ def validate_locations(
     validation_locations = active_datapackage["location_name_to_id"]
     for location, id in known_good_locations.items():
         if location not in validation_locations.keys():
-            discrepancies.append(f"Location Missing from new data: {location}")#{
-                #location: {"type": "location", "known": location, "validation": None}
-            #}
-        # excluded_location_ids.append(id)
+            discrepancies.append(f"{location}: Location Missing from new data:")
         elif not validation_locations[location] == id:
-            #checked_validation_locations.pop(location)
-            discrepancies.append(f"Location id mismatch: {id} -> {validation_locations[location]}")#{
-            #     location: {
-            #         "type": "id",
-            #         "known": id,
-            #         "validation": validation_locations[location],
-            #     }
-            # }
-            print(
-                f"{location}: expected id: {id}, found id: {validation_locations[location]}"
-            )
+            discrepancies.append(f"{location}: id has changed: {id} -> {validation_locations[location]}")
 
-    # for id in excluded_location_ids:
-    # if id in validation_locations.values():
-    #     discrepancies[id] = {id  : {"type" : "id reuse", "known" : id in known_good_locations}}
 
 
 validate_items(known_datapackage, active_datapackage, discrepancies)
@@ -143,7 +105,7 @@ if len(discrepancies) == 0:
             json.dump(datapackage_export, f, indent=4)
     sys.exit(0)
 else:
-    print(f"Validation failed, {len(discrepancies)} discrepancies found")
     for dis in discrepancies:
         print(dis)
+    print(f"Validation failed, {len(discrepancies)} discrepancies found")
     sys.exit(1)
