@@ -1,0 +1,60 @@
+name: Validate Datapackage
+description: Validate a data package against a known good file.
+inputs:
+  datapackage-file:
+    description: 'The path to the datapackage file to validate.'
+    required: true
+  game-name:
+    description: 'The name of the game associated with the datapackage.'
+    required: true
+  update-export:
+    description: 'Whether to update the export file with new entries if validation is successful.'
+    required: false
+    default: 'false'
+  ap-version:
+    description: The version of archipelago to use. This must either match a refspec in the archipelago repository or be 'latest' to match the latest stable release.
+    default: "latest"
+    required: true
+  python-version:
+    description: The python version to use
+    required: true
+    default: "3.13"
+  apworld-path:
+    description: The path to the apworld folder or apworld itself
+    required: true
+  apworld-name:
+    description: The name of the apworld. This should only be set if the folder storing your apworld in the repository isn't the same
+    type: string
+    default: ""
+  checkout:
+    description: Whether or not to run the checkout step. Can be useful to disable if you want to run tests on a dirty repo
+    default: true
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@master
+      if: ${{ inputs.checkout != 'false' }}
+    - uses: Eijebong/ap-actions/setup-ap@main
+      with:
+        version: ${{ inputs.ap-version }}
+        python-version: ${{ inputs.python-version }}
+    - uses: Eijebong/ap-actions/copy-apworld-source@main
+      id: copy
+      with:
+        apworld-name: ${{ inputs.apworld-name }}
+        apworld-path: ${{ inputs.apworld-path }}
+
+    - name: Copy validation script
+      shell: bash
+      run: |
+        cp ${GITHUB_ACTION_PATH}/datapackage_validator.py archipelago/datapackage_validator.py
+
+    - name: Validate Datapackage
+      shell: bash
+      run: |
+        cd archipelago && uv run python datapackage_validator.py
+      env:
+        DATAPACKAGE_EXPORT_PATH: ${{ inputs.datapackage-file }}
+        DATAPACKAGE_EXPORT_GAME_NAME: ${{ inputs.game-name }}
+        DATAPACKAGE_EXPORT_UPDATE: ${{ inputs.update-export }}
