@@ -1,3 +1,4 @@
+# pyright: reportTypedDictNotRequiredAccess=false
 import sys
 import os
 import json
