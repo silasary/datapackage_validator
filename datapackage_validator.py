@@ -57,6 +57,8 @@ if game_name not in worlds.network_data_package["games"].keys():
 known_datapackage = datapackage_export["games"][game_name]
 active_datapackage = worlds.network_data_package["games"][game_name]
 
+active_location_id_to_name = {v: k for k, v in active_datapackage["location_name_to_id"].items()}
+
 discrepancies: list[str] = []
 
 
@@ -83,8 +85,10 @@ def validate_locations(
     known_good_locations = known_datapackage["location_name_to_id"]
     validation_locations = active_datapackage["location_name_to_id"]
     for location, id in known_good_locations.items():
-        if location not in validation_locations.keys():
-            discrepancies.append(f"[Location] {location}: Location Missing from new data:")
+        if location not in validation_locations.keys() and id in active_location_id_to_name.keys():
+            discrepancies.append(f"[Location] {location}: Location Missing from new data, found {active_location_id_to_name[id]} in its place")
+        elif location not in validation_locations.keys():
+            discrepancies.append(f"[Location] {location}: Location Missing from new data")
         elif not validation_locations[location] == id:
             discrepancies.append(f"[Location] {location}: id has changed: {id} -> {validation_locations[location]}")
 
